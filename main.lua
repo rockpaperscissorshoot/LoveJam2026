@@ -1,10 +1,10 @@
 love.physics.setMeter(64)
 
 local RADIUS = 12
-local MOVEMENT_FORCE = 198
+local MOVEMENT_FORCE = 460
 local ACCELERATION = 20
 local VELOCITY_LIMIT = 28
-local TARGETMAXVELOCITY = 448
+local TARGETMAXVELOCITY = 460
 local WorldDt = 0
 
 local world = love.physics.newWorld(0, 900, true)
@@ -73,7 +73,7 @@ function Camera.new(width, Height)
     local height = Height
     local speed = CAMERA_SPEED
 
-    return setmetatable({x,y,width,height,speed}, Camera)
+    return setmetatable({x =x ,y = y, width = width, height = height, speed = speed}, Camera)
 end
 
 function Camera:update(target, dt)
@@ -122,6 +122,10 @@ function love.update(dt)
     worldDt = dt
 
     world:update(dt)
+    local px, py = playerBody:getPosition()
+    local playerCameraPositionX = px
+    local playerCameraPositionY = py
+    cam:update({x = playerCameraPositionX, y = playerCameraPositionY}, dt)
 end
 
 function love.keypressed(key)
@@ -139,12 +143,14 @@ function love.keypressed(key)
 end
 
 function love.draw()
-
+    cam:apply()
     love.graphics.setColor(1, 0.4, 0.4, 0.7)
     love.graphics.circle("fill", playerBody:getX(), playerBody:getY(), RADIUS)
 
     love.graphics.setColor(0.4, 0.8, 1, 0.7)
     love.graphics.polygon("fill", groundBody:getWorldPoints(groundShape:getPoints()))
+
+    cam:release()
 
     love.graphics.setColor(1, 1, 1)
     local vx, vy = playerBody:getLinearVelocity()
