@@ -30,6 +30,12 @@ playerFixture:setRestitution(0.0)
 local facing = 1
 local onGround = false
 
+
+local Camera = {}
+local CAMERA_SPEED = 6
+Camera.__index = Camera
+
+
 --=============
 --==Functions==
 --=============
@@ -58,7 +64,36 @@ function getDamping (vx)
     return damping
 end
 
+-------------------------------------------------------------------------------
 
+function Camera.new(width, Height)
+    local x = 0
+    local y = 0
+    local width = width
+    local height = Height
+    local speed = CAMERA_SPEED
+
+    return setmetatable({x,y,width,height,speed}, Camera)
+end
+
+function Camera:update(target, dt)
+    local targetX = target.x - self.width * 0.5
+    local targetY = target.y - self.height * 0.45
+
+    self.x = self.x + (targetX - self.x) * self.speed * dt
+    self.y = self.y + (targetY - self.y) * self.speed * dt
+end
+
+function Camera:apply()
+    love.graphics.push()
+    love.graphics.translate(-math.floor(self.x), -math.floor(self.y))
+end
+
+function Camera:release()
+    love.graphics.pop()
+end
+
+local cam = Camera.new(love.graphics.getWidth(), love.graphics.getHeight())
 
 function love.load()
     love.window.setFullscreen(true)
@@ -76,10 +111,12 @@ function love.update(dt)
     if movingLeftBoolean then
         local damping = getDamping(-vx)
         playerBody:applyForce(-MOVEMENT_FORCE * damping, 0)
+        facing = -1
     end
     if movingRightBoolean then
         local damping = getDamping(vx)
         playerBody:applyForce(MOVEMENT_FORCE * damping, 0)
+        facing = 1
     end
 
     worldDt = dt
@@ -97,7 +134,7 @@ function love.keypressed(key)
     end
 
     if key == "e" then
-        playerBody:applyLinearImpulse(100,-87)
+        playerBody:applyLinearImpulse(100* facing, -87)
     end
 end
 
